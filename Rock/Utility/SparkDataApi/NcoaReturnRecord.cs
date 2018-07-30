@@ -897,13 +897,14 @@ namespace Rock.Utility.SparkDataApi
             {
                 ncoaHistory.NcoaType = NcoaType.Month48Move;
             }
-            else if ( MatchFlag.IsNotNullOrWhiteSpace() )
+            else if ( MatchFlag.IsNotNullOrWhiteSpace() && RecordType == "C" )
             {
                 ncoaHistory.NcoaType = NcoaType.Move;
             }
             else
             {
                 ncoaHistory.NcoaType = NcoaType.NoMove;
+                ncoaHistory.Processed = Processed.Complete;
             }
 
             if ( AddressStatus != "V" )

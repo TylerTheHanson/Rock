@@ -363,6 +363,10 @@ namespace Rock.Utility.SparkDataApi
                     } );
                     DateTime dt = DateTime.Now;
                     records.ForEach( r => r.NcoaRunDateTime = dt );
+
+                    // NCOA return two entries for each move. One for the new address, and one for the previous address. Remove the old address because it is not required.
+                    var movedRecords = records.Where( r => r.RecordType == "C" && r.MatchFlag == "M" ).ToList(); // Find all the moved addresses with a current address
+                    records.RemoveAll( r => r.RecordType == "H" && movedRecords.Any( m => m.InputIndividualId == r.InputIndividualId ) ); // Delete all the moved addresses's previous addresses
                 }
                 catch ( Exception ex)
                 {
