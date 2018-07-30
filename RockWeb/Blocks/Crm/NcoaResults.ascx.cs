@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Crm
             gfNcoaFilter.SaveUserPreference( "Move Distance", nbMoveDistance.Text );
             gfNcoaFilter.SaveUserPreference( "Campus", cpCampus.SelectedValue );
 
-            ShowView();
+            NavigateToCurrentPage();
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Crm
                 query = query.Where( e => e.NcoaRunDateTime < ncoaDateRange.End.Value );
             }
 
-            var moveType = gfNcoaFilter.GetUserPreference( "Move type" ).ConvertToEnumOrNull<MoveType>();
+            var moveType = gfNcoaFilter.GetUserPreference( "Move Type" ).ConvertToEnumOrNull<MoveType>();
             if ( moveType.HasValue )
             {
                 query = query.Where( i => i.MoveType == moveType );
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Crm
             decimal? moveDistance = gfNcoaFilter.GetUserPreference( "Move Distance" ).AsDecimalOrNull();
             if ( moveDistance.HasValue )
             {
-                query = query.Where( i => i.MoveDistance == moveDistance.Value );
+                query = query.Where( i => i.MoveDistance <= moveDistance.Value );
             }
 
             string lastName = gfNcoaFilter.GetUserPreference( "Last Name" );

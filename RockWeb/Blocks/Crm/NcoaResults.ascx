@@ -21,7 +21,7 @@
                         <Rock:RockDropDownList ID="ddlMoveType" runat="server" Label="Move Type" />
                         <Rock:RockDropDownList ID="ddlAddressStatus" runat="server" Label="Address Status" />
                         <Rock:RockDropDownList ID="ddlInvalidReason" runat="server" Label="Invalid Reason" />
-                        <Rock:NumberBox ID="nbMoveDistance" runat="server" NumberType="Double" Label="Move Distance"></Rock:NumberBox>
+                        <Rock:NumberBox ID="nbMoveDistance" runat="server" NumberType="Double" Label="Move Distance" Help="Maximum distance that a person or family moved" AppendText="miles"></Rock:NumberBox>
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                         <Rock:CampusPicker ID="cpCampus" Label="Campus" runat="server" />
                     </Rock:GridFilter>
