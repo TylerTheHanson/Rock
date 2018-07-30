@@ -474,7 +474,17 @@ namespace Rock.Model
         /// <summary>
         /// Manual Update Required
         /// </summary>
-        ManualUpdateRequired = 2
+        ManualUpdateRequired = 2,
+
+        /// <summary>
+        /// Manual update required or not processed
+        /// </summary>
+        ManualUpdateRequiredOrNotProcessed = 3,
+
+        /// <summary>
+        /// All records
+        /// </summary>
+        All = 4
     }
 
     #endregion
