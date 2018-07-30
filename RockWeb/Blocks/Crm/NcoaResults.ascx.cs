@@ -243,6 +243,21 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Handles the ItemDataBound event of the rptNcoaResultsFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptNcoaResultsFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                Repeater childRepeater = ( Repeater ) e.Item.FindControl( "rptNcoaResults" );
+                childRepeater.DataSource = ( e.Item.DataItem as IGrouping<string, NcoaRow> );
+                childRepeater.DataBind();
+            }
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rptNcoaResults control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -541,8 +556,8 @@ namespace RockWeb.Blocks.Crm
 
             }
 
-            rptNcoaResults.DataSource = pagedNcoaRows.Take( resultCount );
-            rptNcoaResults.DataBind();
+            rptNcoaResultsFamily.DataSource = pagedNcoaRows.Take( resultCount ).GroupBy( n => n.FamilyName );
+            rptNcoaResultsFamily.DataBind();
 
 
             if ( pagedNcoaRows.Count() > resultCount )
