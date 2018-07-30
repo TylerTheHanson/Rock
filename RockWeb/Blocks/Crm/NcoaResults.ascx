@@ -1,8 +1,8 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NcoaResults.ascx.cs" Inherits="RockWeb.Blocks.Crm.NcoaResults" %>
 
-<asp:UpdatePanel ID="upNcoaResults" runat="server">
+<asp:UpdatePanel id="upNcoaResults" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
+        <asp:Panel id="pnlDetails" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -14,25 +14,25 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:GridFilter ID="gfNcoaFilter" runat="server">
-                        <Rock:RockDropDownList ID="ddlProcessed" runat="server" Label="Processed" />
-                        <Rock:SlidingDateRangePicker ID="sdpMoveDate" runat="server" Label="Move Date" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
-                        <Rock:SlidingDateRangePicker ID="sdpProcessedDate" runat="server" Label="NCOA Processed Date" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
-                        <Rock:RockDropDownList ID="ddlMoveType" runat="server" Label="Move Type" />
-                        <Rock:RockDropDownList ID="ddlAddressStatus" runat="server" Label="Address Status" />
-                        <Rock:RockDropDownList ID="ddlInvalidReason" runat="server" Label="Invalid Reason" />
-                        <Rock:NumberBox ID="nbMoveDistance" runat="server" NumberType="Double" Label="Move Distance" Help="Maximum distance that a person or family moved" AppendText="miles"></Rock:NumberBox>
-                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
-                        <Rock:CampusPicker ID="cpCampus" Label="Campus" runat="server" />
+                    <Rock:GridFilter id="gfNcoaFilter" runat="server">
+                        <Rock:RockDropDownList id="ddlProcessed" runat="server" Label="Processed" />
+                        <Rock:SlidingDateRangePicker id="sdpMoveDate" runat="server" Label="Move Date" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                        <Rock:SlidingDateRangePicker id="sdpProcessedDate" runat="server" Label="NCOA Processed Date" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                        <Rock:RockDropDownList id="ddlMoveType" runat="server" Label="Move Type" />
+                        <Rock:RockDropDownList id="ddlAddressStatus" runat="server" Label="Address Status" />
+                        <Rock:RockDropDownList id="ddlInvalidReason" runat="server" Label="Invalid Reason" />
+                        <Rock:NumberBox id="nbMoveDistance" runat="server" NumberType="Double" Label="Move Distance" Help="Maximum distance that a person or family moved" AppendText="miles"></Rock:NumberBox>
+                        <Rock:RockTextBox id="tbLastName" runat="server" Label="Last Name" />
+                        <Rock:CampusPicker id="cpCampus" Label="Campus" runat="server" />
                     </Rock:GridFilter>
                 </div>
 
                 <div class="panel-body margin-t-md">
 
-                    <asp:Repeater ID="rptNcoaResultsFamily" runat="server" OnItemDataBound="rptNcoaResultsFamily_ItemDataBound">
+                    <asp:Repeater id="rptNcoaResultsFamily" runat="server" OnItemDataBound="rptNcoaResultsFamily_ItemDataBound">
                         <ItemTemplate>
                             <h3><%# Eval("Key") %></h3>
-                            <asp:Repeater ID="rptNcoaResults" runat="server" OnItemDataBound="rptNcoaResults_ItemDataBound" OnItemCommand="rptNcoaResults_ItemCommand">
+                            <asp:Repeater id="rptNcoaResults" runat="server" OnItemDataBound="rptNcoaResults_ItemDataBound" OnItemCommand="rptNcoaResults_ItemCommand">
                                 <ItemTemplate>
                                     <div class="well">
                                         <div class="row">
@@ -47,7 +47,7 @@
                                                         </dl>
                                                     </div>
                                                     <div class="col-lg-6 col-md-12">
-                                                        <asp:Literal ID="lMembers" runat="server" />
+                                                        <asp:Literal id="lMembers" runat="server" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -76,17 +76,22 @@
                                                         </dl>
                                                     </div>
                                                     <div class="col-lg-7 col-md-12 margin-b-sm">
+                                                        <label class='label <%# Eval("StatusCssClass") %>'><%# Eval("Status") %></label>
                                                         <h4>
-                                                            <label class='label <%# Eval("StatusCssClass") %>'><%# Eval("Status") %></label>
                                                             <div class="pull-right">
                                                                 <a class="btn btn-default" href='<%# string.Format( "{0}{1}", ResolveRockUrl( "~/Person/" ), Eval("HeadOftheHousehold.Id") ) %>'><i class="fa fa-users"></i></a>
                                                             </div>
                                                         </h4>
                                                     </div>
                                                     <div class="col-lg-7 col-md-12 col-lg-offset-5">
-                                                        <asp:LinkButton ID="lbAction" CommandArgument='<%# Eval("Id") %>' CommandName='<%# Eval("CommandName") %>' Visible='<%# (bool) Eval("ShowButton") %>' runat="server" Text='<%# Eval("CommandText") %>' CssClass="btn btn-default" />
+                                                        <asp:LinkButton id="lbAction" CommandArgument='<%# Eval("Id") %>' CommandName='<%# Eval("CommandName") %>' Visible='<%# (bool) Eval("ShowButton") %>' runat="server" Text='<%# Eval("CommandText") %>' CssClass="btn btn-default" />
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <span class="text-warning"><asp:Literal id="lWarning" runat="server"></asp:Literal></span>
                                             </div>
                                         </div>
                                     </div>
@@ -97,8 +102,8 @@
                     </asp:Repeater>
 
                     <div class="ncoaResult-nav">
-                        <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
-                        <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary btn-next" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary btn-prev" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
                     </div>
 
                 </div>

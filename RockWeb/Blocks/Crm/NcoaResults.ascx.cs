@@ -236,6 +236,9 @@ namespace RockWeb.Blocks.Crm
                 else
                 {
                     mmembers.Add( "Other Family Members", ncoaRow.FamilyMembers.Select( a => a.FullName ).ToList().AsDelimited( "<Br/>" ) );
+
+                    var warninglabel = e.Item.FindControl( "lWarning" ) as Literal;
+                    warninglabel.Text = "Auto processing this move would result in a split family.";
                 }
             }
             familyMembers.Text = mmembers.Html;
@@ -487,7 +490,7 @@ namespace RockWeb.Blocks.Crm
                                          ncoaHistoryRecord.OriginalCity, ncoaHistoryRecord.OriginalState, ncoaHistoryRecord.OriginalPostalCode )
                                          .ConvertCrLfToHtmlBr();
                 ncoaRow.Status = ncoaHistoryRecord.Processed == Processed.Complete ? "Processed" : "Not Processed";
-                ncoaRow.StatusCssClass = ncoaHistoryRecord.Processed == Processed.Complete ? "label-success" : "label-warning";
+                ncoaRow.StatusCssClass = ncoaHistoryRecord.Processed == Processed.Complete ? "label-success" : "label-default";
                 ncoaRow.ShowButton = false;
 
                 var family = new GroupService( rockContext ).Get( ncoaHistoryRecord.FamilyId );
