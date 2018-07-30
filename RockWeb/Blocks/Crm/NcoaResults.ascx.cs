@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfNcoaFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfNcoaFilter.SaveUserPreference( "Processed", ddlProcessed.SelectedValue );
+            gfNcoaFilter.SaveUserPreference( "Processed", ddlProcessed.SelectedValue.IsNullOrWhiteSpace() ? Processed.All.ConvertToInt().ToString() : ddlProcessed.SelectedValue );
             gfNcoaFilter.SaveUserPreference( "Move Date", sdpMoveDate.DelimitedValues );
             gfNcoaFilter.SaveUserPreference( "NCOA Processed Date", sdpProcessedDate.DelimitedValues );
             gfNcoaFilter.SaveUserPreference( "Move Type", ddlMoveType.SelectedValue );
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Crm
                 case "Processed":
                     {
                         var processed = e.Value.ConvertToEnumOrNull<Processed>();
-                        if ( processed.HasValue )
+                        if ( processed.HasValue && processed.Value != Processed.All )
                         {
                             e.Value = processed.ConvertToString();
                         }
@@ -287,11 +287,18 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindFilter()
         {
-            ddlProcessed.BindToEnum<Processed>( true );
+            ddlProcessed.BindToEnum<Processed>( true, new Processed[] { Processed.All } );
             int? processedId = gfNcoaFilter.GetUserPreference( "Processed" ).AsIntegerOrNull();
             if ( processedId.HasValue )
             {
-                ddlProcessed.SetValue( processedId.Value.ToString() );
+                if ( processedId.Value != Processed.All.ConvertToInt() )
+                {
+                    ddlProcessed.SetValue( processedId.Value.ToString() );
+                }
+            }
+            else
+            {
+                ddlProcessed.SetValue( Processed.ManualUpdateRequiredOrNotProcessed.ConvertToInt().ToString() );
             }
 
             sdpMoveDate.DelimitedValues = gfNcoaFilter.GetUserPreference( "Move Date" );
@@ -351,11 +358,15 @@ namespace RockWeb.Blocks.Crm
             var processed = gfNcoaFilter.GetUserPreference( "Processed" ).ConvertToEnumOrNull<Processed>();
             if ( processed.HasValue )
             {
-                query = query.Where( i => i.Processed == processed );
-            }
-            else
-            {
-                query = query.Where( i => i.Processed == Processed.NotProcessed || i.Processed == Processed.ManualUpdateRequired );
+                if ( processed.Value != Processed.All && processed.Value != Processed.ManualUpdateRequiredOrNotProcessed )
+                {
+                    query = query.Where( i => i.Processed == processed );
+                }
+                else if ( processed.Value == Processed.ManualUpdateRequiredOrNotProcessed )
+                {
+                    query = query.Where( i => i.Processed == Processed.ManualUpdateRequired || i.Processed == Processed.NotProcessed );
+                }
+
             }
 
             var moveDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( gfNcoaFilter.GetUserPreference( "Move Date" ) );
