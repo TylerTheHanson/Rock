@@ -209,16 +209,17 @@ namespace Rock.Utility
 
             sparkDataConfig.NcoaSettings.CurrentUploadCount = addresses.Count;
             trueNcoaApi.CreateReport( sparkDataConfig.NcoaSettings.CurrentReportKey );
-            sparkDataConfig.NcoaSettings.CurrentReportStatus = "Pending: Report";
-            SaveSettings( sparkDataConfig );
 
             // Delete previous NcoaHistory entries
-            using (RockContext rockContext = new RockContext())
+            using ( RockContext rockContext = new RockContext() )
             {
                 NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
                 ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
                 rockContext.SaveChanges();
             }
+
+            sparkDataConfig.NcoaSettings.CurrentReportStatus = "Pending: Report";
+            SaveSettings( sparkDataConfig );
         }
 
         /// <summary>
@@ -284,16 +285,16 @@ namespace Rock.Utility
                 }
             }
 
-            sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
-            sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
-            SaveSettings( sparkDataConfig );
-
             ProcessNcoaResults( sparkDataConfig );
 
             sparkDataApi.NcoaCompleteReport( sparkDataConfig.SparkDataApiKey, sparkDataConfig.NcoaSettings.FileName, sparkDataConfig.NcoaSettings.CurrentReportExportKey );
 
             //Notify group
             SentNotification( sparkDataConfig, "finished" );
+
+            sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
+            sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+            SaveSettings( sparkDataConfig );
         }
 
         /// <summary>

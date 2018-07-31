@@ -107,6 +107,16 @@ namespace Rock.Jobs
                     sparkDataConfig.Messages.Add( $"NOCA job failed: {RockDateTime.Now.ToString()} - {exception.Message}" );
                     Ncoa.SaveSettings( sparkDataConfig );
 
+                    try
+                    {
+                        var ncoa = new Ncoa();
+                        ncoa.SentNotification( sparkDataConfig, "failed" );
+                    }
+                    catch
+                    {
+                    }
+
+
                     if ( sparkDataConfig.SparkDataApiKey.IsNotNullOrWhiteSpace() && sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )
                     {
                         SparkDataApi sparkDataApi = new SparkDataApi();
@@ -147,9 +157,7 @@ namespace Rock.Jobs
         /// <param name="sparkDataConfig">The spark data configuration.</param>
         private void StatusFailed( SparkDataConfig sparkDataConfig )
         {
-            // No action. Only notify group
-            var ncoa = new Ncoa();
-            ncoa.SentNotification( sparkDataConfig, "failed" );
+            // No action.
         }
 
         /// <summary>
