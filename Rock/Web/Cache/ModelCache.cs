@@ -44,6 +44,16 @@ namespace Rock.Web.Cache
     {
 
         /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        [Obsolete("Use SetFromEntity instead")]
+        public virtual void CopyFromModel( Rock.Data.IEntity model )
+        {
+            this.SetFromEntity( model );
+        }
+
+        /// <summary>
         /// Set's the cached objects properties from the model/entities properties.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -369,7 +379,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
@@ -404,10 +414,10 @@ namespace Rock.Web.Cache
                     return ( propValue as Guid? )?.ToString() ?? propValue;
                 }
 
-                // The remainder of this method is only neccessary to support the old way of getting attribute 
+                // The remainder of this method is only necessary to support the old way of getting attribute 
                 // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
                 // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
-                // suported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
+                // supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), the remainder of this method 
                 // can be removed
 
                 if ( Attributes == null ) return null;

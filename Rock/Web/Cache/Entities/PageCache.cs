@@ -753,7 +753,7 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The levels deep.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="currentPageHeirarchy">The current page heirarchy.</param>
+        /// <param name="currentPageHeirarchy">The current page hierarchy.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
@@ -817,6 +817,17 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Gets the cache key for the selected page id.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Obsolete("No longer needed")]
+        public static string CacheKey( int pageId )
+        {
+            return string.Format( "Rock:Page:{0}", pageId );
+        }
 
         /// <summary>
         /// Formats the page url based on the selected theme and layout

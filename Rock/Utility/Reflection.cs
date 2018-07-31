@@ -241,7 +241,7 @@ namespace Rock
             assemblyFileNames = assemblyFileNames.Where( a => !a.EndsWith( ".resources.dll", StringComparison.OrdinalIgnoreCase )
                                         && !ignoredFileStart.Any( i => Path.GetFileName( a ).StartsWith( i, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
 
-            // get a lookup of already loaded assemblies so that we don't have to load it unneccessarily
+            // get a lookup of already loaded assemblies so that we don't have to load it unnecessarily
             var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache && !string.IsNullOrWhiteSpace( a.Location ) )
                 .DistinctBy( k => new Uri( k.CodeBase ).LocalPath )
                 .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v, StringComparer.OrdinalIgnoreCase );
@@ -255,8 +255,9 @@ namespace Rock
                 {
                     try
                     {
-                        // if an assembly is found that isn't loaded yet, load it so we can search it for types
-                        assembly = Assembly.Load( File.ReadAllBytes( assemblyFileName ) );
+                        // if an assembly is found that isn't loaded yet, load it into the CurrentDomain
+                        AssemblyName assemblyName = AssemblyName.GetAssemblyName( assemblyFileName );
+                        assembly = AppDomain.CurrentDomain.Load( assemblyName );
                     }
                     catch ( Exception ex )
                     {

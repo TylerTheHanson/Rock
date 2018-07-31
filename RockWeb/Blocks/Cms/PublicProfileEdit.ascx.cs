@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// The main Person Profile block the main information about a peron 
+    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Public Profile Edit" )]
     [Category( "CMS" )]
@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Cms
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, "", "", order: 0 )]
     [BooleanField( "Disable Name Edit", "Whether the First and Last Names can be edited.", false, order: 1 )]
-    [BooleanField( "View Only", "Should people be prevented from editing thier profile or family records?", false, "", 2 )]
+    [BooleanField( "View Only", "Should people be prevented from editing their profile or family records?", false, "", 2 )]
     [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 3 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 5 )]
@@ -946,7 +946,10 @@ namespace RockWeb.Blocks.Cms
                                     ddlGradePicker.SelectedIndex = 0;
                                 }
                             }
-
+                            else
+                            {
+                                ddlGradePicker.Visible = false;
+                            }
                             tbEmail.Text = person.Email;
                             rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 

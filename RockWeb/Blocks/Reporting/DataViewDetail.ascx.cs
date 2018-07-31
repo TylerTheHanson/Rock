@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Reporting
             _settingKeyShowResults = _settingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
 
             // Switch does not automatically initialize again after a partial-postback.  This script 
-            // looks for any switch elements that have not been initialized and re-intializes them.
+            // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
     $('.switch > input').each( function () {
@@ -642,7 +642,17 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
-            etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
+
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
+                etpEntityType.Enabled = false;
+            }
+            else
+            {
+                etpEntityType.Enabled = true;
+            }
+
             cpCategory.SetValue( dataView.CategoryId );
             nbPersistedScheduleIntervalMinutes.Text = dataView.PersistedScheduleIntervalMinutes.ToString();
 

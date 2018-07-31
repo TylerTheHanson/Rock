@@ -323,7 +323,7 @@ namespace Rock.Model
 
             private set
             {
-                // don't do anthing here since EF uses this for loading
+                // don't do anything here since EF uses this for loading
             }
         }
 
@@ -1074,7 +1074,7 @@ namespace Rock.Model
 
             private set
             {
-                // don't do anthing here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
+                // don't do anything here since EF uses this for loading the Birthdate From the database. Use SetBirthDate to set the birthdate
             }
         }
 
@@ -1085,7 +1085,7 @@ namespace Rock.Model
         /// NOTE: If their birthday is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their birthday when doing this calculation
         /// </summary>
         /// <value>
-        /// The the number of days until their next birthday
+        /// The number of days until their next birthday
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -1421,13 +1421,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the number of days until their next anniversay. This is a computed column and can be used
+        /// Gets or sets the number of days until their next anniversary. This is a computed column and can be used
         /// in LinqToSql queries, but there is no in-memory calculation. Avoid using property outside of
         /// a linq query. Use DaysToAnniversary instead.
-        /// NOTE: If their anniversay is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their anniversay when doing this calculation
+        /// NOTE: If their anniversary is Feb 29, and this isn't a leap year, it'll treat Feb 28th as their anniversary when doing this calculation
         /// </summary>
         /// <value>
-        /// The the number of days until their next anniversary
+        /// The number of days until their next anniversary
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -1910,6 +1910,17 @@ namespace Rock.Model
                             HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Property, "Photo" );
                         }
 
+                        // ensure a new person has an Alternate Id
+                        int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                        var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                        PersonSearchKey personSearchKey = new PersonSearchKey()
+                        {
+                            PersonAlias = this.Aliases.First(),
+                            SearchTypeValueId = alternateValueId,
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true )
+                        };
+                        personSearchKeyService.Add( personSearchKey );
+
                         break;
                     }
 
@@ -1981,6 +1992,11 @@ namespace Rock.Model
 
                                 }
                             }
+                        }
+
+                        if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
+                        {
+                            RecordStatusLastModifiedDateTime = RockDateTime.Now;
                         }
 
                         break;
@@ -2070,7 +2086,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Calcualates the top-most signal and updates the person properties.
+        /// Calculates the top-most signal and updates the person properties.
         /// </summary>
         public void CalculateSignals()
         {
@@ -3584,7 +3600,7 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the head of household of.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>
-        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's head of household. If the provided Person's head of household is not found, this value will be null.
         /// </returns>
         public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
         {

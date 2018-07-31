@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Crm
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 foreach ( var workflowType in new WorkflowTypeService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( t => guidList.Contains( t.Guid ) && t.IsActive )
+                    .Where( t => guidList.Contains( t.Guid ) && t.IsActive == true )
                     .ToList() )
                 {
                     if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -294,15 +294,10 @@ namespace RockWeb.Blocks.Crm
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
                 if ( setId.HasValue )
                 {
-                    var selectedPersonIds = new EntitySetItemService( rockContext )
-                        .GetByEntitySetId( setId.Value )
-                        .Select( i => i.EntityId )
-                        .Distinct()
-                        .ToList();
+                    var selectedPersonsQry = new EntitySetService( rockContext ).GetEntityQuery<Person>( setId.Value );
 
                     // Get the people selected
-                    foreach ( var person in new PersonService( rockContext ).Queryable( true )
-                        .Where( p => selectedPersonIds.Contains( p.Id ) )
+                    foreach ( var person in selectedPersonsQry
                         .Select( p => new
                         {
                             p.Id,

@@ -1121,7 +1121,7 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace( txtPassword.Text ) )
                     {
-                        nbSaveAccount.Title = "Missing Informaton";
+                        nbSaveAccount.Title = "Missing Information";
                         nbSaveAccount.Text = "A username and password are required when saving an account";
                         nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
@@ -1327,7 +1327,7 @@ namespace RockWeb.Blocks.Event
 
                 // Only allow the person that was logged in when this registration was created. 
                 // If the logged in person, registered on someone elses behalf (for example, husband logged in, but entered wife's name as the Registrar), 
-                // also allow that person to access the regisratiuon
+                // also allow that person to access the registration
                 if ( ( registration.PersonAlias != null && registration.PersonAlias.PersonId == CurrentPersonId.Value ) ||
                     ( registration.CreatedByPersonAlias != null && registration.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
                 {
@@ -1573,7 +1573,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.Registrants.Add( registrant );
                 }
 
-                // While the number of registrants belonging to registration is less than the selected count, addd another registrant
+                // While the number of registrants belonging to registration is less than the selected count, add another registrant
                 while ( RegistrationState.RegistrantCount < registrantCount )
                 {
                     var registrant = new RegistrantInfo { Cost = cost };
@@ -1774,7 +1774,7 @@ namespace RockWeb.Blocks.Event
                         message = ex.Message;
                     }
 
-                    ShowError( "An Error Occurred Processing Your " + RegistrationTerm, ex.Message );
+                    ShowError( "An error occurred processing your " + RegistrationTerm.ToLowerInvariant(), ex.Message );
 
                     // Try to delete the registration if it was just created
                     try
@@ -2470,7 +2470,7 @@ namespace RockWeb.Blocks.Event
                     rockContext.SaveChanges();
                     registrantInfo.Id = registrant.Id;
 
-                    // Set any of the templat's registrant attributes
+                    // Set any of the template's registrant attributes
                     registrant.LoadAttributes();
                     foreach ( var field in RegistrationTemplate.Forms
                         .SelectMany( f => f.Fields
@@ -2538,7 +2538,7 @@ namespace RockWeb.Blocks.Event
                             true,
                             CurrentPersonAliasId ) );
 
-                    // Clear this registran't family guid so it's not updated again
+                    // Clear this registrant's family guid so it's not updated again
                     registrantInfo.FamilyGuid = Guid.Empty;
 
                     // Save the signed document
@@ -2630,7 +2630,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                // If we've created the family aready for this registrant, add them to it
+                // If we've created the family already for this registrant, add them to it
                 if (
                         ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||
                         ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes && singleFamilyId.HasValue )
@@ -2666,23 +2666,37 @@ namespace RockWeb.Blocks.Event
 
             if ( familyId.HasValue && location != null )
             {
-                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                if ( homeLocationType != null )
+                var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
+                var existingLocation = new LocationService( rockContext ).Get(
+                    location.Street1,
+                    location.Street2,
+                    location.City,
+                    location.State,
+                    location.PostalCode,
+                    location.Country,
+                    familyGroup,
+                    true,
+                    false );
+
+                if ( existingLocation == null )
                 {
-                    var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
-                    if ( familyGroup != null )
+                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                    if ( homeLocationType != null )
                     {
-                        GroupService.AddNewGroupAddress(
-                            rockContext,
-                            familyGroup,
-                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                            location.Street1,
-                            location.Street2,
-                            location.City,
-                            location.State,
-                            location.PostalCode,
-                            location.Country,
-                            true );
+                        if ( familyGroup != null )
+                        {
+                            GroupService.AddNewGroupAddress(
+                                rockContext,
+                                familyGroup,
+                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                                location.Street1,
+                                location.Street2,
+                                location.City,
+                                location.State,
+                                location.PostalCode,
+                                location.Country,
+                                true );
+                        }
                     }
                 }
             }
@@ -2886,6 +2900,35 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                var rgx = new System.Text.RegularExpressions.Regex( @"[^\d]" );
+                string ccNum = rgx.Replace( txtCreditCard.Text, string.Empty );
+
+                bool isValid = true;
+                var errorMessages = new List<string>();
+                if ( string.IsNullOrWhiteSpace( ccNum ) )
+                {
+                    errorMessages.Add("Card Number is required");
+                    isValid = false;
+                }
+
+                if ( !mypExpiration.SelectedDate.HasValue )
+                {
+                    errorMessages.Add( "Card Expiration Date is required " );
+                    isValid = false;
+                }
+
+                if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
+                {
+                    errorMessages.Add( "Card Security Code is required" );
+                    isValid = false;
+                }
+
+                if ( !isValid )
+                {
+                    errorMessage = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
+                    return isValid;
+                }
+
                 paymentInfo = GetCCPaymentInfo( gateway );
             }
 
@@ -3133,7 +3176,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private CreditCardPaymentInfo GetCCPaymentInfo( GatewayComponent gateway )
         {
-            var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
+            var ccPaymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate != null ? mypExpiration.SelectedDate.Value : new DateTime());
 
             ccPaymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             ccPaymentInfo.LastNameOnCard = txtCardLastName.Text;
@@ -3870,7 +3913,7 @@ namespace RockWeb.Blocks.Event
         #region Dynamic Control Methods
 
         /// <summary>
-        /// Creates the dynamic controls for currennt panel
+        /// Creates the dynamic controls for current panel
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void CreateDynamicControls( bool setValues )
@@ -5165,7 +5208,7 @@ namespace RockWeb.Blocks.Event
                     hfMinimumDue.Value = minimumPayment.Value.ToString();
                     lMinimumDue.Text = minimumPayment.Value.FormatAsCurrency();
 
-                    // Make sure payment amount is within minumum due and balance due. If not, set to balance due
+                    // Make sure payment amount is within minimum due and balance due. If not, set to balance due
                     if ( !RegistrationState.PaymentAmount.HasValue ||
                         RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
@@ -5334,7 +5377,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Udpates RegistrationState props using info from the UI controls
+        /// Updates RegistrationState props using info from the UI controls
         /// </summary>
         private void ParseSummaryControls()
         {

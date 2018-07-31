@@ -110,7 +110,7 @@ namespace RockWeb
 
             if ( useFrameDomains )
             {
-                // string concat is 5x faster than String.Format in this senario
+                // string concat is 5x faster than String.Format in this scenario
                 Response.AddHeader( "Content-Security-Policy", "frame-ancestors " + allowedDomains );
             }
             else
@@ -851,6 +851,9 @@ namespace RockWeb
         /// </summary>
         private void LoadCacheObjects( RockContext rockContext )
         {
+            // Flush the EntityAttributesCache just in case Migrations added attributes thru SQL
+            EntityAttributesCache.Remove();
+
             // Cache all the entity types
             foreach ( var entityType in new Rock.Model.EntityTypeService( rockContext ).Queryable().AsNoTracking() )
             {

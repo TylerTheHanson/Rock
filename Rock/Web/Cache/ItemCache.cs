@@ -34,7 +34,7 @@ namespace Rock.Web.Cache
         private const string _AllRegion = "AllItems";
 
         // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
-        // This is intentional behaviour in this case.
+        // This is intentional behavior in this case.
         private static readonly object _obj = new object();
 
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
@@ -43,11 +43,11 @@ namespace Rock.Web.Cache
         #region Protected Methods
 
         /// <summary>
-        /// Returns the key prefixed with the type of ojbect being cached.
+        /// Returns the key prefixed with the type of object being cached.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected static string QualifiedKey( string key )
+        internal protected static string QualifiedKey( string key )
         {
             return $"{KeyPrefix}:{key}";
         }
@@ -58,7 +58,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="itemFactory">The item factory.</param>
         /// <returns></returns>
-        protected static T GetOrAddExisting( int key, Func<T> itemFactory )
+        internal protected static T GetOrAddExisting( int key, Func<T> itemFactory )
         {
             return GetOrAddExisting( key.ToString(), itemFactory );
         }
@@ -70,7 +70,7 @@ namespace Rock.Web.Cache
         /// <param name="itemFactory">The item factory.</param>
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
-        protected static T GetOrAddExisting( int key, Func<T> itemFactory, TimeSpan expiration )
+        internal protected static T GetOrAddExisting( int key, Func<T> itemFactory, TimeSpan expiration )
         {
             return GetOrAddExisting( key.ToString(), itemFactory, expiration );
         }
@@ -81,7 +81,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="itemFactory">The item factory.</param>
         /// <returns></returns>
-        protected static T GetOrAddExisting( string key, Func<T> itemFactory )
+        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory )
         {
             return GetOrAddExisting( key, itemFactory, TimeSpan.MaxValue );
         }
@@ -93,7 +93,7 @@ namespace Rock.Web.Cache
         /// <param name="itemFactory">The item factory.</param>
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
-        protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
+        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
         {
             string qualifiedKey = QualifiedKey( key );
 
@@ -123,7 +123,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="item">The item.</param>
         /// <param name="expiration">The expiration.</param>
-        protected static void UpdateCacheItem( string key, T item, TimeSpan expiration )
+        internal protected static void UpdateCacheItem( string key, T item, TimeSpan expiration )
         {
             string qualifiedKey = QualifiedKey( key );
 
@@ -170,7 +170,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         /// <param name="keyFactory">All keys factory.</param>
-        protected static List<string> GetOrAddKeys( Func<List<string>> keyFactory )
+        internal protected static List<string> GetOrAddKeys( Func<List<string>> keyFactory )
         {
             var value = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
             if ( value != null )
@@ -185,7 +185,7 @@ namespace Rock.Web.Cache
         /// Adds the keys.
         /// </summary>
         /// <param name="keyFactory">All keys factory.</param>
-        protected static List<string> AddKeys( Func<List<string>> keyFactory )
+        internal protected static List<string> AddKeys( Func<List<string>> keyFactory )
         {
             var allKeys = keyFactory?.Invoke();
             if ( allKeys != null )

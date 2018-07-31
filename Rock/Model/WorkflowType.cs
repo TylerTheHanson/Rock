@@ -62,12 +62,24 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is <c>true</c> if the WorkflowType is active; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
+        public bool? IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value ?? false; }
+        }
+        private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this item is active or not.
+        /// </summary>
+        /// <value>
+        /// Active.
+        /// </value>
+        bool IHasActiveFlag.IsActive
         {
             get { return _isActive; }
             set { _isActive = value; }
         }
-        private bool _isActive = true;
 
         /// <summary>
         /// Gets or sets the workflow identifier prefix.
@@ -182,10 +194,10 @@ namespace Rock.Model
         public int? LogRetentionPeriod { get; set; }
 
         /// <summary>
-        /// Gets or sets the completed workflow rention period in days.
+        /// Gets or sets the completed workflow retention period in days.
         /// </summary>
         /// <value>
-        /// The completed workflow rention period in days.
+        /// The completed workflow retention period in days.
         /// </value>
         [DataMember]
         public int? CompletedWorkflowRetentionPeriod { get; set; }

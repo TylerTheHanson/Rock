@@ -70,7 +70,7 @@
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
-                                            Help="The maximum number of registrants that user is allowed to register" Visible="false" />
+                                            Help="The maximum number of registrants that user is allowed to register. Leave blank for unlimited." Visible="false" />
 
                                     </div>
                                 </div>
@@ -328,7 +328,7 @@
 
                         <Rock:PanelWidget ID="wpWaitListTransition" runat="server" Title="Wait List Transition Email">
                             <div class="alert alert-info">
-                                This email template will be used when the individual needs to be notified that they are no longer on the wait list and have been transtioned to a full registrant.
+                                This email template will be used when the individual needs to be notified that they are no longer on the wait list and have been transitioned to a full registrant.
                             </div>
                             <div class="row">
                                 <div class="col-md-6">

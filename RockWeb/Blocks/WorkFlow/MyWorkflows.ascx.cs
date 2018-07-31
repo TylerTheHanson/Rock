@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.WorkFlow
                     )
                     .ToList();
 
-                // Get any workflow types that have authorized activites and get the form count
+                // Get any workflow types that have authorized activities and get the form count
                 workflowTypeIds.ForEach( w =>
                     workflowTypeCounts.Add( w, activeForms.Where( a => a.Activity.Workflow.WorkflowTypeId == w ).Count() ) );
 
@@ -411,7 +411,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             foreach ( var workflowType in allWorkflowTypes )
             {
-                if ( workflowType.IsActive  && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( workflowType.IsActive == true  && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     foreach ( var activityType in workflowType.ActivityTypes.Where( a => a.ActionTypes.Any( f => f.WorkflowFormId.HasValue ) ) )
                     {
