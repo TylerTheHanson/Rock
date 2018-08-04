@@ -1,10 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Compilation;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
@@ -17,6 +28,8 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="Rock.Web.UI.Controls.IRockControl" />
+    [DefaultProperty( "PickerButtonTemplate" )]
+    [ParseChildren( true, "PickerButtonTemplate" )]
     public class ItemFromBlockPicker : CompositeControl, IRockControl
     {
         #region IRockControl implementation
@@ -245,52 +258,32 @@ namespace Rock.Web.UI.Controls
         private Panel _pickerPanel;
         private LinkButton _lbShowPicker;
         private ModalDialog _pickerDialog;
-        private UserControl _pickerControl;
+        private UserControl _pickerBlock;
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets the button CSS class.
+        /// Gets or sets the note view lava template.
         /// </summary>
         /// <value>
-        /// The button CSS class.
+        /// The note view lava template.
         /// </value>
-        public string ButtonCssClass
+        [PersistenceMode( PersistenceMode.InnerDefaultProperty )]
+        public string PickerButtonTemplate
         {
-            get
-            {
-                EnsureChildControls();
-                return _lbShowPicker.CssClass;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _lbShowPicker.CssClass = value;
-            }
+            get => this.ViewState["PickerButtonTemplate"] as string;
+            set => this.ViewState["PickerButtonTemplate"] = value;
         }
 
         /// <summary>
-        /// Gets or sets the button text.
+        /// Gets or sets the Cascading Style Sheet (CSS) class rendered by the Web server control on the client.
         /// </summary>
-        /// <value>
-        /// The button text.
-        /// </value>
-        public string ButtonText
+        public override string CssClass
         {
-            get
-            {
-                EnsureChildControls();
-                return _lbShowPicker.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _lbShowPicker.Text = value;
-            }
+            get => ViewState["CssClass"] as string;
+            set => ViewState["CssClass"] = value;
         }
 
         /// <summary>
@@ -302,15 +295,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ButtonTextTemplate
         {
-            get
-            {
-                return ViewState["ButtonTextTemplate"] as string;
-            }
-
-            set
-            {
-                ViewState["ButtonTextTemplate"] = value;
-            }
+            get => ViewState["ButtonTextTemplate"] as string ?? "Click Me";
+            set => ViewState["ButtonTextTemplate"] = value;
         }
 
 
@@ -322,15 +308,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string BlockTypePath
         {
-            get
-            {
-                return ViewState["BlockTypePath"] as string;
-            }
-
-            set
-            {
-                ViewState["BlockTypePath"] = value;
-            }
+            get => ViewState["BlockTypePath"] as string;
+            set => ViewState["BlockTypePath"] = value;
         }
 
         /// <summary>
@@ -339,13 +318,80 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [show in modal]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowInModal { get; set; }
+        public bool ShowInModal
+        {
+            get => ViewState["ShowInModal"] as bool? ?? false;
+
+            set
+            {
+                EnsureChildControls();
+                ViewState["ShowInModal"] = value;
+                _lbShowPicker.Visible = value;
+                _pickerDialog.Visible = value;
+
+                // make sure the picker is a control in the Dialog if in ShowModal mode
+                Control pickerParent;
+                if ( value )
+                {
+                    pickerParent = _pickerDialog.Content;
+                }
+                else
+                {
+                    pickerParent = this;
+                }
+
+                if ( _pickerPanel.Parent != pickerParent )
+                {
+                    _pickerPanel.Parent.Controls.Remove( _pickerPanel );
+                    pickerParent.Controls.Add( _pickerPanel );
+                }
+
+                if ( _pickerBlock is IPickerBlock )
+                {
+                    // make sure out SelectItem event is only triggered from the Picker's SelectItem event when NOT in modal mode
+                    // In ShowInModal mode, our SelectItem event will be trigger when the Modal dialog is closed with the 'Save/Select' button
+                    ( _pickerBlock as IPickerBlock ).SelectItem -= PickerBlock_SelectItem;
+                    if ( !value )
+                    {
+                        ( _pickerBlock as IPickerBlock ).SelectItem += PickerBlock_SelectItem;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the modal save button text.
+        /// </summary>
+        /// <value>
+        /// The modal save button text.
+        /// </value>
+        public string ModalSaveButtonText
+        {
+            get
+            {
+                EnsureChildControls();
+                return _pickerDialog.SaveButtonText;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _pickerDialog.SaveButtonText = value;
+            }
+        }
 
         /// <summary>
         /// Shows the modal.
         /// </summary>
         public void ShowModal()
         {
+            EnsureChildControls();
+            if ( _pickerBlock is IPickerBlock )
+            {
+                // ensure the picker has the SelectedValue set to what we currently have as the SelectedValue
+                ( _pickerBlock as IPickerBlock ).SelectedValue = this.SelectedValue;
+            }
+
             _pickerDialog.Show();
         }
 
@@ -359,7 +405,8 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return _pickerControl as IPickerBlock;
+                EnsureChildControls();
+                return _pickerBlock as IPickerBlock;
             }
         }
 
@@ -380,36 +427,49 @@ namespace Rock.Web.UI.Controls
 
             _pickerDialog = new ModalDialog();
             _pickerDialog.SaveClick += _pickerDialog_SaveClick;
-
             this.Controls.Add( _pickerDialog );
 
+            // NOTE: ShowInModal could be set AFTER CreateChildControls, so there is also logic in ShowInModal's setter that configures based on ShowInModal
+            _lbShowPicker.Visible = this.ShowInModal;
+            _pickerDialog.Visible = this.ShowInModal;
+            _pickerDialog.SaveButtonText = "Select";
+
             _pickerPanel = new Panel();
-            //_pickerPanel.CssClass = $"picker picker-select picker-person {this.CssClass}";
 
             if ( BlockTypePath.IsNotNullOrWhiteSpace() )
             {
-                _pickerControl = TemplateControl.LoadControl( BlockTypePath ) as UserControl;
+                _pickerBlock = TemplateControl.LoadControl( BlockTypePath ) as UserControl;
+
+
                 var rockPage = System.Web.HttpContext.Current.Handler as RockPage;
 
                 var pageCache = PageCache.Get( rockPage.PageId );
-                ( _pickerControl as RockBlock )?.SetBlock( pageCache, null, false, false );
+                ( _pickerBlock as RockBlock )?.SetBlock( pageCache, null, false, false );
 
-                if ( ( _pickerControl as IPickerBlock ).ShowInModal )
+                if ( this.ShowInModal )
                 {
                     _pickerDialog.Content.Controls.Add( _pickerPanel );
                 }
                 else
                 {
                     this.Controls.Add( _pickerPanel );
+                    if ( _pickerBlock is IPickerBlock )
+                    {
+                        ( _pickerBlock as IPickerBlock ).SelectItem += PickerBlock_SelectItem;
+                    }
                 }
 
-                _pickerPanel.Controls.Add( _pickerControl );
-
-                /*var pickerBlock = _rockBlock as IPickerBlock;
-                if ( pickerBlock != null )
+                if ( _pickerBlock is IPickerBlock )
                 {
-                    pickerBlock.SelectItem += PickerBlock_SelectItem;
-                }*/
+                    _pickerPanel.Controls.Add( _pickerBlock );
+                }
+                else
+                {
+                    // enforce that the block has to implement IPickerBLock
+                    var nbInvalidBLock = new NotificationBox { NotificationBoxType = NotificationBoxType.Danger, Text = $"<strong>{BlockTypePath}<strong> is not a valid PickerBlock", Visible = true };
+                    _pickerPanel.Controls.Add( nbInvalidBLock );
+                }
+
             }
         }
 
@@ -423,8 +483,7 @@ namespace Rock.Web.UI.Controls
             _pickerDialog.Hide();
 
             // if the picker was in a modal dialog, track the SelectValue and SelectedText in viewstate when saved 
-            ViewState["SelectedValue"] = ( _pickerControl as IPickerBlock )?.SelectedValue;
-            ViewState["SelectedText"] = ( _pickerControl as IPickerBlock )?.SelectedText;
+            ViewState["SelectedValue"] = ( _pickerBlock as IPickerBlock )?.SelectedValue;
 
             SelectItem?.Invoke( sender, e );
         }
@@ -468,6 +527,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockBlock().RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "SelectedText", SelectedText );
+            mergeFields.Add( "SelectedValue", SelectedValue );
+
+            _lbShowPicker.Text = this.PickerButtonTemplate.ResolveMergeFields( mergeFields );
+            if ( this.ShowInModal )
+            {
+                _lbShowPicker.CssClass = this.CssClass;
+            }
+            else
+            {
+                base.CssClass = this.CssClass;
+            }
+
             base.RenderControl( writer );
         }
 
@@ -482,8 +555,8 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                var pickerBlock = _pickerControl as IPickerBlock;
-                if ( pickerBlock?.ShowInModal == true )
+                var pickerBlock = _pickerBlock as IPickerBlock;
+                if ( this.ShowInModal == true )
                 {
                     // if shown in a modal, track the SelectedValue in viewstate since the pickerBlock could be cancelled
                     return ViewState["SelectedValue"] as string;
@@ -497,11 +570,13 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                var pickerBlock = _pickerControl as IPickerBlock;
+                var pickerBlock = _pickerBlock as IPickerBlock;
                 if ( pickerBlock != null )
                 {
                     pickerBlock.SelectedValue = value;
                 }
+
+                ViewState["SelectedValue"] = value;
             }
         }
 
@@ -516,16 +591,8 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                var pickerBlock = _pickerControl as IPickerBlock;
-                if ( pickerBlock?.ShowInModal == true )
-                {
-                    // if shown in a modal, track the SelectedText in viewstate since the pickerBlock could be cancelled
-                    return ViewState["SelectedText"] as string;
-                }
-                else
-                {
-                    return pickerBlock?.SelectedText;
-                }
+                var pickerBlock = _pickerBlock as IPickerBlock;
+                return pickerBlock?.GetSelectedText( this.SelectedValue );
             }
         }
 

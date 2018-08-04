@@ -38,15 +38,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The selected text.
         /// </value>
-        string SelectedText { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this control should be shown in a modal
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show in modal]; otherwise, <c>false</c>.
-        /// </value>
-        bool ShowInModal { get; }
+        string GetSelectedText( string selectedValue );
 
         /// <summary>
         /// Any Picker Settings that be configured
@@ -56,6 +48,9 @@ namespace Rock.Web.UI
         /// </value>
         Dictionary<string, string> PickerSettings { get; }
 
-        //event EventHandler SelectItem;
+        /// <summary>
+        /// Occurs when [select item].
+        /// </summary>
+        event EventHandler SelectItem;
     }
 }
