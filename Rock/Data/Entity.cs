@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -121,7 +122,7 @@ namespace Rock.Data
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Cache.CacheEntityType.Get( typeof( T ) ).Id;
+                return EntityTypeCache.Get( typeof( T ) ).Id;
             }
         }
 
@@ -350,7 +351,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the available keys (for debuging info).
+        /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
@@ -570,7 +571,7 @@ namespace Rock.Data
         /// </value>
         public static string GetIndexResultTemplate()
         {
-            return Rock.Cache.CacheEntityType.Get( typeof( T ) ).IndexResultTemplate;
+            return EntityTypeCache.Get( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion

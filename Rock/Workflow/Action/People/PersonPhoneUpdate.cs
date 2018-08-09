@@ -24,7 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Phone Type (From Attribute)", "The attribute that contains the phone number type to update.", false, "", "", 1, "PhoneTypeAttribute",
         new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone numer to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Type", "The type of phone number to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, "", 2 )]
     [WorkflowTextOrAttribute( "Phone Number", "Attribute Value", "The value or attribute value to set the phone number to. <span class='tip tip-lava'></span>", false, "", "", 3, "PhoneNumber" )]
     [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "Unlisted" )]
     [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "MessagingEnabled" )]
@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
-                var attributePerson = CacheAttribute.Get( guidPersonAttribute.Value, rockContext );
+                var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
                     string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value );
@@ -96,15 +96,15 @@ namespace Rock.Workflow.Action
             }
 
             // determine the phone type to edit
-            CacheDefinedValue phoneType = null;
+            DefinedValueCache phoneType = null;
             var phoneTypeAttributeValue = action.GetWorklowAttributeValue( GetAttributeValue( action, "PhoneTypeAttribute" ).AsGuid() );
             if ( phoneTypeAttributeValue != null )
             {
-                phoneType = CacheDefinedValue.Get( phoneTypeAttributeValue.AsGuid() );
+                phoneType = DefinedValueCache.Get( phoneTypeAttributeValue.AsGuid() );
             }
             if ( phoneType == null )
             {
-                phoneType = CacheDefinedValue.Get( GetAttributeValue( action, "PhoneType" ).AsGuid() );
+                phoneType = DefinedValueCache.Get( GetAttributeValue( action, "PhoneType" ).AsGuid() );
             }
             if ( phoneType == null )
             {
@@ -202,7 +202,7 @@ namespace Rock.Workflow.Action
 
                 if ( action.Activity != null && action.Activity.Workflow != null )
                 {
-                    var workflowType = action.Activity.Workflow.CacheWorkflowType;
+                    var workflowType = action.Activity.Workflow.WorkflowTypeCache;
                     if ( workflowType != null && workflowType.LoggingLevel == WorkflowLoggingLevel.Action )
                     {
                         var person = new PersonService( rockContext ).Get( personId.Value );

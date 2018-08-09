@@ -17,7 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -139,9 +139,9 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 Guid? providerGuid = _componentPicker.SelectedValue.AsGuidOrNull();
-                if ( _textBox.Text.IsNotNullOrWhitespace() && providerGuid.HasValue )
+                if ( _textBox.Text.IsNotNullOrWhiteSpace() && providerGuid.HasValue )
                 {
-                    return $"{CacheEntityType.Get( providerGuid.Value ).Id},{_textBox.Text}";
+                    return $"{EntityTypeCache.Get( providerGuid.Value ).Id},{_textBox.Text}";
                 }
 
                 return _textBox.Text;
@@ -150,15 +150,15 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                if ( value.IsNotNullOrWhitespace() )
+                if ( value.IsNotNullOrWhiteSpace() )
                 {
                     var valueSplit = value.Split( ',' );
                     if ( valueSplit != null && valueSplit.Length == 2 )
                     {
-                        //CacheEntityType.Get( typeof(Checkr) ).Id
-                        //Type backgroundCheckComponentType = Type.GetType( CacheEntityType.Get( entityTypeId ).AssemblyName )
+                        //EntityTypeCache.Get( typeof(Checkr) ).Id
+                        //Type backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName )
                         string entityTypeId = valueSplit[0];
-                        var li = _componentPicker.Items.FindByValue( CacheEntityType.Get( entityTypeId.AsInteger() ).Guid.ToString().ToUpper() );
+                        var li = _componentPicker.Items.FindByValue( EntityTypeCache.Get( entityTypeId.AsInteger() ).Guid.ToString().ToUpper() );
                         if ( li != null )
                         {
                             li.Selected = true;
@@ -238,7 +238,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>

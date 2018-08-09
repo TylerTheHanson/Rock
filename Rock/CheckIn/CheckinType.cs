@@ -19,16 +19,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// Helper class for getting check-in configuratoin settings from the group type
+    /// Helper class for getting check-in configuration settings from the group type
     /// </summary>
     public class CheckinType
     {
-        private CacheGroupType _checkinType;
+        private GroupTypeCache _checkinType;
 
         /// <summary>
         /// Gets the type of checkin.
@@ -125,7 +125,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the search.
         /// </value>
-        public CacheDefinedValue SearchType { get { return CacheDefinedValue.Get( GetSetting( "core_checkin_SearchType" ).AsGuid() ); } }
+        public DefinedValueCache SearchType { get { return DefinedValueCache.Get( GetSetting( "core_checkin_SearchType" ).AsGuid() ); } }
 
         /// <summary>
         /// Gets the regular expression filter.
@@ -254,7 +254,7 @@ namespace Rock.CheckIn
         /// <param name="checkinTypeId">The checkin type identifier.</param>
         public CheckinType( int checkinTypeId )
         {
-            _checkinType = CacheGroupType.Get( checkinTypeId );
+            _checkinType = GroupTypeCache.Get( checkinTypeId );
         }
 
         /// <summary>

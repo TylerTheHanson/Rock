@@ -130,7 +130,7 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
 
         /// <summary>
-        /// Guid for Fundraising Opportunity Type (Trip, Project, Intership, etc)
+        /// Guid for Fundraising Opportunity Type (Trip, Project, Internship, etc)
         /// </summary>
         public const string FUNDRAISING_OPPORTUNITY_TYPE = "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D";
 
@@ -263,6 +263,12 @@ namespace Rock.SystemGuid
         /// Protect My Ministry MVR jurisdiction codes
         /// </summary>
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
+
+        /// <summary>
+        /// Protect My Ministry background package types
+        /// </summary>
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
+        public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
         /// Guid for the types of map styles

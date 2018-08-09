@@ -28,7 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -46,6 +46,8 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class CalculateFamilyAnalytics : IJob
     {
+        private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -88,23 +90,29 @@ namespace Rock.Jobs
             var resultContext = new RockContext();
 
             
-            var eraAttribute = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
-            var eraStartAttribute = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
-            var eraEndAttribute = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
+            var eraAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
+            var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
+            var eraEndAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
+
+            if (eraAttribute == null || eraStartAttribute == null || eraEndAttribute == null)
+            {
+                throw new Exception( "Family analytic attributes could not be found" );
+            }
 
             resultContext.Database.CommandTimeout = commandTimeout;
 
             var results = resultContext.Database.SqlQuery<EraResult>( "spCrm_FamilyAnalyticsEraDataset" ).ToList();
 
-            int personEntityTypeId = CacheEntityType.Get( "Rock.Model.Person" ).Id;
-            int attributeEntityTypeId = CacheEntityType.Get( "Rock.Model.Attribute" ).Id;
-            int eraAttributeId = CacheAttribute.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() ).Id;
-            int personAnalyticsCategoryId = CacheCategory.Get( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
+            int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
+            int attributeEntityTypeId = EntityTypeCache.Get( "Rock.Model.Attribute" ).Id;
+            int eraAttributeId = eraAttribute.Id;
+            int personAnalyticsCategoryId = CategoryCache.Get( SystemGuid.Category.HISTORY_PERSON_ANALYTICS.AsGuid() ).Id;
 
             foreach (var result in results )
             {
                 // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
                 RockContext updateContext = new RockContext();
+                updateContext.SourceOfChange = SOURCE_OF_CHANGE;
                 updateContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( updateContext );
                 var historyService = new HistoryService( updateContext );
@@ -157,6 +165,7 @@ namespace Rock.Jobs
                                     historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
+                                    historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
                                 }
 
                                 updateContext.SaveChanges();
@@ -219,9 +228,11 @@ namespace Rock.Jobs
                                 historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
                                 historyRecord.Caption = "eRA";
                                 historyRecord.Verb = "ENTERED";
+                                historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
                                 historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                 historyRecord.RelatedEntityId = eraAttributeId;
                                 historyRecord.CategoryId = personAnalyticsCategoryId;
+                                historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
                             }
 
                             updateContext.SaveChanges();
@@ -258,7 +269,7 @@ namespace Rock.Jobs
         /// <param name="family">The family.</param>
         private void LaunchWorkflow( Guid workflowTypeGuid, Group family )
         {
-            int adultRoleId = CacheGroupType.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
+            int adultRoleId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
 
             var headOfHouse = family.Members.Where( m => m.GroupRoleId == adultRoleId ).OrderBy( m => m.Person.Gender ).FirstOrDefault();
 
@@ -268,7 +279,7 @@ namespace Rock.Jobs
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var workflowType = CacheWorkflowType.Get( workflowTypeGuid );
+                    var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflowService = new WorkflowService( rockContext );

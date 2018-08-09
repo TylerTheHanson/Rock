@@ -48,7 +48,7 @@ Sys.Application.add_load(function () {
             <div id="main-controls" class="col-md-9 col-lg-7">
                 <asp:Panel ID="pnlDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-validation" />
+                    <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                     <h1 runat="server">General Information</h1>
 
@@ -88,7 +88,7 @@ Sys.Application.add_load(function () {
                     </div>
 
                     <h2 runat="server">Horizontal Forms</h2>
-                    <p>While Rock uses a similar approach to Bootstrap, we've made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
+                    <p>While Rock uses a similar approach to Bootstrap, we’ve made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
                         registrations. Below is the syntax for declaring a horizontal form.
                     </p>
                     <div runat="server" class="r-example">
@@ -688,7 +688,7 @@ Sys.Application.add_load(function () {
                     <a id="Notificationbox"></a>
                     <h2 runat="server">Rock:Notificationbox</h2>
                     <p>
-                        This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We've added the ability to have Details that can be shown.
+                        This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We’ve added the ability to have Details that can be shown.
                     </p>
 
                     <div runat="server" class="r-example">
@@ -720,7 +720,7 @@ Sys.Application.add_load(function () {
                     <h2 runat="server">Rock:HighlightLabel</h2>
                     <p>
                         This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
-                        but we've added a few additional custom <code>LabelType</code> options to control the color.
+                        but we’ve added a few additional custom <code>LabelType</code> options to control the color.
                     </p>
                     <div runat="server" class="r-example">
                         <Rock:HighlightLabel ID="hlblExample1" runat="server" LabelType="Default" Text="Default" ToolTip="More information is here." />
@@ -785,7 +785,7 @@ Sys.Application.add_load(function () {
                     <div runat="server" class="r-example">
                         <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
                             DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
-                            CompletedText ="Done" CompletedDuration="3" CompletedMessage="&nbsp;Your Changes have been Saved!"/>
+                            CompletedText ="Done" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"/>
                     </div>
 
                     <a id="AttributeEditor"></a>
@@ -822,7 +822,7 @@ Sys.Application.add_load(function () {
     -->
 
     <ol class="reasons">
-        <li>Stynax highlighting</li>
+        <li>Syntax highlighting</li>
         <li>Tabs work great</li>
         <li>Code folding</li>
     </ol>
@@ -878,7 +878,7 @@ Horizontal Rule
 
                     <a id="CssRollovers"></a>
                     <h2 runat="server">CSS Rollovers</h2>
-                    You often run across situiations where you would like buttons or links to apprear when you hover over a selection of code. Instead of using jQuery toggles you can use the
+                    You often run across situations where you would like buttons or links to appear when you hover over a selection of code. Instead of using jQuery toggles you can use the
                 CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
                 devices the rollover-items will always be displayed.
                 <div runat="server" class="r-example">
@@ -898,7 +898,7 @@ Horizontal Rule
                     <h3 runat="server">rockFadeIn()</h3>
                     <p>
                         Use this to fade in a selected DOM object in. The function hides the selector and then fades it in. Using this object will help provide
-                    consistant fade behavior.
+                    consistent fade behavior.
                     </p>
                     <strong>Usage Examples</strong>
                     <ul>

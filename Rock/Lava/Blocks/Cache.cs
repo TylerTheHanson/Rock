@@ -26,13 +26,13 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Util;
 
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Cache allows you to cache the results of a Lava template.
-    /// 
+    ///
     /// {% cache key:'my-content' %}
     ///     My Lava is now fast!
     /// {% endcache %}
@@ -194,7 +194,7 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            // Cached value not available so render the template and cache it  
+            // Cached value not available so render the template and cache it
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
 
             var cacheDuration = parms["duration"].AsInteger();
@@ -291,7 +291,6 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
@@ -322,7 +321,7 @@ namespace Rock.Lava.Blocks
             parms.Add( "duration", "3600" );
             parms.Add( "maxcachesize", "200000" );
 
-            var markupItems = Regex.Matches( markup, "(.*?:'[^']+')" )
+            var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

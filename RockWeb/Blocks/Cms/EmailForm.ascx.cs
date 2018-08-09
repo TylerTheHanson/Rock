@@ -29,7 +29,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Cms
 <p>&nbsp;</p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 7 )]
-    [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merege fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
+    [CodeEditorField( "Response Message", "The message the user will see when they submit the form if no response page if provided. Lava merge fields are available for you to use in your message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"<div class=""alert alert-info"">
     Thank you for your response. We appreciate your feedback!
 </div>", "", 8 )]
     [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 9 )]
@@ -139,14 +139,14 @@ namespace RockWeb.Blocks.Cms
             string fromEmail = GetAttributeValue( "FromEmail" );
             if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                SetAttributeValue( "FromEmail", CacheGlobalAttributes.Value( "OrganizationEmail" ) );
+                SetAttributeValue( "FromEmail", GlobalAttributesCache.Value( "OrganizationEmail" ) );
                 SaveAttributeValues();
             }
 
             string fromName = GetAttributeValue( "FromName" );
             if ( string.IsNullOrWhiteSpace( fromEmail ) )
             {
-                SetAttributeValue( "FromName", CacheGlobalAttributes.Value( "OrganizationName" ) );
+                SetAttributeValue( "FromName", GlobalAttributesCache.Value( "OrganizationName" ) );
                 SaveAttributeValues();
             }
 
@@ -247,8 +247,8 @@ namespace RockWeb.Blocks.Cms
         private void SendEmail()
         {
             // ensure this is not from a bot
-            string[] bots = CacheGlobalAttributes.Value( "EmailExceptionsFilter" ).Split( '|' );
-            string test = CacheGlobalAttributes.Value( "EmailExceptionsFilter" );
+            string[] bots = GlobalAttributesCache.Value( "EmailExceptionsFilter" ).Split( '|' );
+            string test = GlobalAttributesCache.Value( "EmailExceptionsFilter" );
             var serverVarList = Context.Request.ServerVariables;
             bool isBot = false;
 
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Cms
                 for ( int i = 0; i < Request.Files.Count; i++ )
                 {
                     var uploadedFile = Request.Files[i];
-                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhitespace() )
+                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhiteSpace() )
                     {
                         var binaryFile = new BinaryFile();
                         binaryFileService.Add( binaryFile );

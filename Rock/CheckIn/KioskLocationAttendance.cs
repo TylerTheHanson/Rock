@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -156,7 +156,7 @@ namespace Rock.CheckIn
         /// Flushes the specified id.
         /// </summary>
         /// <param name="id">The id.</param>
-        [Obsolete( "Use Remove( int id ) insted.")]
+        [Obsolete( "Use Remove( int id ) instead.")]
         public static void Flush( int id )
         {
             Remove( id );
@@ -205,7 +205,7 @@ namespace Rock.CheckIn
                     scheduleAttendance = new KioskScheduleAttendance();
                     scheduleAttendance.ScheduleId = attendance.Occurrence.ScheduleId.Value;
                     scheduleAttendance.ScheduleName = attendance.Occurrence.Schedule.Name;
-                    scheduleAttendance.IsActive = attendance.Occurrence.Schedule.IsScheduleOrCheckInActive;
+                    scheduleAttendance.IsActive = attendance.IsCurrentlyCheckedIn;
                     scheduleAttendance.PersonIds = new List<int>();
                     groupAttendance.Schedules.Add( scheduleAttendance );
                 }

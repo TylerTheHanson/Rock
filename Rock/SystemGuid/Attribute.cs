@@ -91,6 +91,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The family attribute for storing a family's checkin identifiers
         /// </summary>
+        ///
+        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
         #region eRA Attributes
@@ -186,7 +188,7 @@ namespace Rock.SystemGuid
         #region Fundraising Attributes
 
         /// <summary>
-        /// The defined value attribute for storing a fundraising opporunity type's donation button text.
+        /// The defined value attribute for storing a fundraising opportunity type's donation button text.
         /// </summary>
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
 

@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -473,7 +473,7 @@ namespace Rock.Model
             Delete,
 
             /// <summary>
-            /// Something was Registed. For example a Person was registered for an event.
+            /// Something was Registered. For example a Person was registered for an event.
             /// </summary>
             Registered,
 
@@ -1396,7 +1396,7 @@ namespace Rock.Model
 
             if ( definedValueId.HasValue )
             {
-                var dv = CacheDefinedValue.Get( definedValueId.Value );
+                var dv = DefinedValueCache.Get( definedValueId.Value );
                 if ( dv != null )
                 {
                     return dv.Value;
@@ -1468,7 +1468,7 @@ namespace Rock.Model
 
             if ( groupTypeId.HasValue )
             {
-                var dv = CacheGroupType.Get( groupTypeId.Value );
+                var dv = GroupTypeCache.Get( groupTypeId.Value );
                 if ( dv != null )
                 {
                     return dv.Name;
@@ -1505,7 +1505,7 @@ namespace Rock.Model
 
             if ( campusId.HasValue )
             {
-                var dv = CacheCampus.Get( campusId.Value );
+                var dv = CampusCache.Get( campusId.Value );
                 if ( dv != null )
                 {
                     return dv.Name;
@@ -1935,7 +1935,7 @@ namespace Rock.Model
                     history.Caption = this.Caption.Truncate( 200 );
                 }
 
-                // for backwards compability, still store summary (and we can ignore the Obsolete warning here)
+                // for backwards compatibility, still store summary (and we can ignore the Obsolete warning here)
 #pragma warning disable 612, 618
                 history.Summary = this.Summary;
 #pragma warning restore 612, 618

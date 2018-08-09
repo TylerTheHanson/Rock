@@ -25,7 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Follow.Suggestion
 {
@@ -66,7 +66,7 @@ namespace Rock.Follow.Suggestion
         public override List<PersonEntitySuggestion> GetSuggestions( FollowingSuggestionType followingSuggestionType, List<int> followerPersonIds )
         {
             var suggestions = new List<PersonEntitySuggestion>();
-            var personAliasEntityType = CacheEntityType.Get( typeof( Rock.Model.PersonAlias ) );
+            var personAliasEntityType = EntityTypeCache.Get( typeof( Rock.Model.PersonAlias ) );
 
             bool isAutoFollow = GetAttributeValue( followingSuggestionType, "AutoFollow" ).AsBoolean();
 
@@ -88,7 +88,7 @@ namespace Rock.Follow.Suggestion
                             m.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) &&
                             followerPersonIds.Contains( m.PersonId ) );
 
-                    // If a specific group or security role was specifed, limit groupmembers to only those of the selected group
+                    // If a specific group or security role was specified, limit groupmembers to only those of the selected group
                     Guid? groupGuid = GetAttributeValue( followingSuggestionType, "Group" ).AsGuidOrNull();
                     if ( !groupGuid.HasValue )
                     {

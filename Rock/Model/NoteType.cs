@@ -20,7 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.Web.Cache;
 using Rock.Data;
 
 namespace Rock.Model
@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
-    public partial class NoteType : Model<NoteType>, IOrdered
+    public partial class NoteType : Model<NoteType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -235,6 +235,24 @@ namespace Rock.Model
         [DataMember]
         public string ApprovalUrlTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether attachments are allowed for this note type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if attachments are allowed; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowsAttachments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binary file type identifier used when saving attachments.
+        /// </summary>
+        /// <value>
+        /// The binary file type identifier used when saving attachments.
+        /// </value>
+        [DataMember]
+        public int? BinaryFileTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -247,6 +265,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFileType"/> that will be used for attachments.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFileType"/> that will be used for attachments.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFileType BinaryFileType { get; set; }
 
         #endregion
 
@@ -278,6 +305,30 @@ namespace Rock.Model
 
         #endregion
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return NoteTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            NoteTypeCache.UpdateCachedEntity( this.Id, entityState );
+            NoteTypeCache.RemoveEntityNoteTypes();
+        }
+
+        #endregion
+
     }
 
     #region Entity Configuration    
@@ -293,6 +344,7 @@ namespace Rock.Model
         public NoteTypeConfiguration()
         {
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.BinaryFileType ).WithMany().HasForeignKey( p => p.BinaryFileTypeId ).WillCascadeOnDelete( false );
         }
     }
 

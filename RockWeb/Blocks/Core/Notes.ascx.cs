@@ -22,7 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Display Note Type Heading", "Should each note's Note Type be displayed as a heading above each note?", false, "", 13 )]
     [BooleanField( "Expand Replies", "Should replies to automatically expanded?", false, "", 14 )]
     [CodeEditorField( "Note View Lava Template", "The Lava Template to use when rendering the readonly view of all the notes.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/NoteViewList.lava' %}", order: 15 )]
+    //[BooleanField("Delete Me too")]
     public partial class Notes : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -92,7 +93,7 @@ namespace RockWeb.Blocks.Core
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var noteTypes = CacheNoteType.GetByEntity(contextEntity.TypeId, string.Empty, string.Empty, true);
+                    var noteTypes = NoteTypeCache.GetByEntity(contextEntity.TypeId, string.Empty, string.Empty, true);
 
                     // If block is configured to only allow certain note types, limit notes to those types.
                     var configuredNoteTypes = GetAttributeValue( "NoteTypes" ).SplitDelimitedValues().AsGuidList();
@@ -101,10 +102,10 @@ namespace RockWeb.Blocks.Core
                         noteTypes = noteTypes.Where( n => configuredNoteTypes.Contains( n.Guid ) ).ToList();
                     }
 
-                    NoteOptions noteOptions = new NoteOptions()
+                    NoteOptions noteOptions = new NoteOptions( notesTimeline )
                     {
                         EntityId = contextEntity.Id,
-                        NoteTypes = noteTypes,
+                        NoteTypes = noteTypes.ToArray(),
                         NoteLabel = GetAttributeValue( "NoteTerm" ),
                         DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full,
                         ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean(),

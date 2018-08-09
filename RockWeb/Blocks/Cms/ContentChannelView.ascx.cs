@@ -33,7 +33,7 @@ using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -50,7 +50,6 @@ namespace RockWeb.Blocks.Cms
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this content channel block.", false, order: 0 )]
     [LinkedPage( "Detail Page", "The page to navigate to for details.", false, "", "", 1 )]
     [BooleanField( "Enable Legacy Global Attribute Lava", "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.", false, "", 2, "SupportLegacy" )]
-    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 3 )]
 
     // Custom Settings
     [ContentChannelField( "Channel", "The channel to display items from.", false, "", "CustomSetting" )]
@@ -59,6 +58,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
     [IntegerField( "Item Cache Duration", "Number of seconds to cache the content items returned by the selected filter.", false, 3600, "CustomSetting", 0, "CacheDuration" )]
     [IntegerField( "Output Cache Duration", "Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.", false, 0, "CustomSetting", 0, "OutputCacheDuration" )]
+    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
     [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
@@ -76,13 +76,6 @@ namespace RockWeb.Blocks.Cms
         private readonly string CONTENT_CACHE_KEY = "Content";
         private readonly string TEMPLATE_CACHE_KEY = "Template";
         private readonly string OUTPUT_CACHE_KEY = "Output";
-
-        // Fetch the Value as Value and Text instead Guid, so we'll fetch using SQL and use CustomCheckboxListField instead of using DefinedValueField
-        private const string CACHE_TAG_LIST = @"
-            SELECT CAST([DefinedValue].[Value] AS VARCHAR) AS [Value], [DefinedValue].[Value] AS [Text]
-            FROM[DefinedType]
-            JOIN[DefinedValue] ON[DefinedType].[Id] = [DefinedValue].[DefinedTypeId]
-            WHERE[DefinedType].[Guid] = 'BDF73089-9154-40C1-90E4-74518E9937DC'";
 
         #endregion
 
@@ -167,6 +160,7 @@ namespace RockWeb.Blocks.Cms
             Button btnTrigger = new Button();
             btnTrigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             btnTrigger.ID = "rock-config-cancel-trigger";
+            btnTrigger.Style[HtmlTextWriterStyle.Display] = "none";
             btnTrigger.Click += btnTrigger_Click;
             pnlEditModal.Controls.Add( btnTrigger );
 
@@ -209,7 +203,7 @@ namespace RockWeb.Blocks.Cms
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the block for when setings are changed.
+        /// Handles the BlockUpdated event of the block for when settings are changed.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -292,6 +286,7 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
             SetAttributeValue( "CacheDuration", ( nbItemCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
             SetAttributeValue( "OutputCacheDuration", ( nbOutputCacheDuration.Text.AsIntegerOrNull() ?? 0 ).ToString() );
+            SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
             SetAttributeValue( "FilterId", dataViewFilter.Id.ToString() );
             SetAttributeValue( "QueryParameterFiltering", cbQueryParamFiltering.Checked.ToString() );
             SetAttributeValue( "Order", kvlOrder.Value );
@@ -384,7 +379,7 @@ namespace RockWeb.Blocks.Cms
         protected override void ShowSettings()
         {
             // Switch does not automatically initialize again after a partial-postback.  This script 
-            // looks for any switch elements that have not been initialized and re-intializes them.
+            // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
     $('.switch > input').each( function () {
@@ -425,6 +420,16 @@ $(document).ready(function() {
             nbCount.Text = GetAttributeValue( "Count" );
             nbItemCacheDuration.Text = GetAttributeValue( "CacheDuration" );
             nbOutputCacheDuration.Text = GetAttributeValue( "OutputCacheDuration" );
+
+            DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
+            cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
+            cblCacheTags.DataBind();
+            string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
+            {
+                cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
+            }
+
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
             cbQueryParamFiltering.Checked = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean();
 
@@ -759,8 +764,9 @@ $(document).ready(function() {
                         items = new List<ContentChannelItem>();
 
                         var qry = service
-                            .Queryable( "ContentChannel,ContentChannelType" )
-                            .AsNoTracking()
+                            .Queryable()
+                            .Include(a => a.ContentChannel)
+                            .Include(a => a.ContentChannelType)
                             .Where( i => i.ContentChannelId == contentChannel.Id );
 
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
@@ -1093,7 +1099,7 @@ $(document).ready(function() {
         {
             if ( channel != null )
             {
-                var entityTypeCache = CacheEntityType.Get( ITEM_TYPE_NAME );
+                var entityTypeCache = EntityTypeCache.Get( ITEM_TYPE_NAME );
                 if ( entityTypeCache != null )
                 {
                     var entityType = entityTypeCache.GetEntityType();
@@ -1109,7 +1115,7 @@ $(document).ready(function() {
                         .ToList() )
                     {
                         // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
-                        var attribute = CacheAttribute.Get( entityField.AttributeGuid.Value );
+                        var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
                         if ( attribute != null &&
                             attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
@@ -1217,7 +1223,7 @@ $(document).ready(function() {
 
                     if ( filter.EntityTypeId.HasValue )
                     {
-                        var entityTypeCache = Rock.Cache.CacheEntityType.Get( filter.EntityTypeId.Value, rockContext );
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
                         if ( entityTypeCache != null )
                         {
                             filterControl.FilterEntityTypeName = entityTypeCache.Name;
@@ -1319,7 +1325,7 @@ $(document).ready(function() {
             filter.Expanded = filterField.Expanded;
             if ( filterField.FilterEntityTypeName != null )
             {
-                filter.EntityTypeId = Rock.Cache.CacheEntityType.Get( filterField.FilterEntityTypeName ).Id;
+                filter.EntityTypeId = EntityTypeCache.Get( filterField.FilterEntityTypeName ).Id;
                 filter.Selection = filterField.GetSelection();
             }
 

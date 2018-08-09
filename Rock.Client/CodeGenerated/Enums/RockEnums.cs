@@ -473,6 +473,8 @@ namespace Rock.Client.Enums
         NotProcessed = 0x0,
         Complete = 0x1,
         ManualUpdateRequired = 0x2,
+        ManualUpdateRequiredOrNotProcessed = 0x3,
+        All = 0x4,
     }
 
     /// <summary>
@@ -482,6 +484,15 @@ namespace Rock.Client.Enums
         No = 0x0,
         Yes = 0x1,
         Ask = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RegistrarOption
+    {
+        PromptForRegistrar = 0x0,
+        PrefillFirstRegistrant = 0x1,
+        UseFirstRegistrant = 0x2,
     }
 
     /// <summary>
@@ -541,6 +552,8 @@ namespace Rock.Client.Enums
         WorkPhone = 0xa,
         Grade = 0xb,
         ConnectionStatus = 0xc,
+        MiddleName = 0xd,
+        AnniversaryDate = 0xe,
     }
 
     /// <summary>

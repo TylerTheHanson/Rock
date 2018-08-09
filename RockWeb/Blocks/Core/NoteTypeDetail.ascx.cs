@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -99,6 +99,16 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the cbAllowsAttachments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbAllowsAttachments_CheckedChanged( object sender, EventArgs e )
+        {
+            bftpAttachmentType.Visible = cbAllowsAttachments.Checked;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -154,14 +164,15 @@ namespace RockWeb.Blocks.Core
 
             noteType.AllowsReplies = cbAllowsReplies.Checked;
             noteType.MaxReplyDepth = nbMaxReplyDepth.Text.AsIntegerOrNull();
+
+            noteType.AllowsAttachments = cbAllowsAttachments.Checked;
+            noteType.BinaryFileTypeId = noteType.AllowsAttachments ? bftpAttachmentType.SelectedValueAsId() : null;
+
             noteType.ApprovalUrlTemplate = ceApprovalUrlTemplate.Text;
 
             if ( noteType.IsValid )
             {
                 rockContext.SaveChanges();
-
-                CacheNoteType.Remove( noteType.Id );
-                CacheNoteType.RemoveEntityNoteTypes();
             }
 
             NavigateToParentPage();
@@ -181,14 +192,14 @@ namespace RockWeb.Blocks.Core
             bool showEntityTypePicker = true;
 
             var rockContext = new RockContext();
-            CacheEntityType entityType = null;
+            EntityTypeCache entityType = null;
 
             if ( noteTypeId > 0 )
             {
                 noteType = new NoteTypeService( rockContext ).Get( noteTypeId );
                 lActionTitle.Text = ActionTitle.Edit( NoteType.FriendlyTypeName ).FormatAsHtmlTitle();
                 pdAuditDetails.SetEntity( noteType, ResolveRockUrl( "~" ) );
-                entityType = CacheEntityType.Get( noteType.EntityTypeId );
+                entityType = EntityTypeCache.Get( noteType.EntityTypeId );
             }
 
             if ( noteType == null )
@@ -201,7 +212,7 @@ namespace RockWeb.Blocks.Core
                 if ( entityTypeId.HasValue )
                 {
                     noteType.EntityTypeId = entityTypeId.Value;
-                    entityType = CacheEntityType.Get( entityTypeId.Value );
+                    entityType = EntityTypeCache.Get( entityTypeId.Value );
                     showEntityTypePicker = false;
                     lActionTitle.Text = ActionTitle.Add( entityType.FriendlyName + " " + NoteType.FriendlyTypeName ).FormatAsHtmlTitle();
                 }
@@ -247,6 +258,10 @@ namespace RockWeb.Blocks.Core
             cbSendApprovalNotifications.Checked = noteType.SendApprovalNotifications;
             cbAllowsWatching.Checked = noteType.AllowsWatching;
             cbAutoWatchAuthors.Checked = noteType.AutoWatchAuthors;
+
+            cbAllowsAttachments.Checked = noteType.AllowsAttachments;
+            bftpAttachmentType.SetValue( noteType.BinaryFileTypeId );
+            bftpAttachmentType.Visible = cbAllowsAttachments.Checked;
 
             cbAllowsReplies.Checked = noteType.AllowsReplies;
             nbMaxReplyDepth.Text = noteType.MaxReplyDepth.ToString();

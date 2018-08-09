@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
     [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
+    [BooleanField( "Display Notes", "Should the Notes column be displayed?", true, "", 3 )]
     public partial class GroupAttendanceList : RockBlock, ICustomGridColumns
     {
         #region Private Variables
@@ -80,13 +81,19 @@ namespace RockWeb.Blocks.Groups
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                 gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
+
+                var notesColumn = gOccurrences.Columns.OfType<BoundField>().Where( a => a.DataField == "Notes" ).FirstOrDefault();
+                if ( notesColumn != null )
+                {
+                    notesColumn.Visible = GetAttributeValue( "DisplayNotes" ).AsBoolean();
+                }
             }
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
-                bddlCampus.DataSource = CacheCampus.All();
+                bddlCampus.DataSource = CampusCache.All();
                 bddlCampus.DataBind();
                 bddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
             }
@@ -106,7 +113,7 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( _allowCampusFilter )
                 {
-                    var campus = CacheCampus.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
+                    var campus = CampusCache.Get( GetBlockUserPreference( "Campus" ).AsInteger() );
                     if ( campus != null )
                     {
                         bddlCampus.Title = campus.Name;
@@ -130,7 +137,7 @@ namespace RockWeb.Blocks.Groups
         protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
             SetBlockUserPreference( "Campus", bddlCampus.SelectedValue );
-            var campus = CacheCampus.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+            var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
             bddlCampus.Title = campus != null ? campus.Name : "All Campuses";
             BindGrid();
         }
@@ -515,7 +522,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     // If campus filter is selected, load all the descendent locations for each campus into a dictionary
                     var locCampus = new Dictionary<int, int>();
-                    foreach ( var campus in CacheCampus.All().Where( c => c.LocationId.HasValue ) )
+                    foreach ( var campus in CampusCache.All().Where( c => c.LocationId.HasValue ) )
                     {
                         locCampus.AddOrIgnore( campus.LocationId.Value, campus.Id );
                         foreach ( var locId in locationService.GetAllDescendentIds( campus.LocationId.Value ) )
@@ -533,7 +540,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
-                    // Remove the occurrenced that are associated with another campus
+                    // Remove the occurrences that are associated with another campus
                     occurrences = occurrences
                         .Where( o =>
                             !o.CampusId.HasValue ||
@@ -623,6 +630,7 @@ namespace RockWeb.Blocks.Groups
         public int DidAttendCount { get; set; }
         public double AttendanceRate { get; set; }
         public bool CanDelete { get; set; }
+        public string Notes { get; set; }
 
         public AttendanceListOccurrence ( AttendanceOccurrence occurrence )
         {
@@ -638,6 +646,7 @@ namespace RockWeb.Blocks.Groups
             DidNotOccur = occurrence.DidNotOccur ?? false;
             DidAttendCount = occurrence.DidAttendCount;
             AttendanceRate = occurrence.AttendanceRate;
+            Notes = occurrence.Notes;
         }
     }
 

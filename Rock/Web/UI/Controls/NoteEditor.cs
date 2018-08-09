@@ -20,7 +20,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Cache;
+using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -61,6 +61,17 @@ namespace Rock.Web.UI.Controls
         /// The note options.
         /// </value>
         public NoteOptions NoteOptions { get; private set; }
+
+        /// <summary>
+        /// Sets the note options.
+        /// </summary>
+        /// <param name="noteOptions">The note options.</param>
+        public void SetNoteOptions( NoteOptions noteOptions )
+        {
+            this.NoteOptions = noteOptions;
+            this.BindNoteTypes();
+            this.NoteOptions.NoteTypesChange += NoteOptions_NoteTypesChange;
+        }
 
         /// <summary>
         /// Sets the note.
@@ -357,15 +368,29 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Constructor
+        #region Events
+        
+        /// <summary>
+        /// Handles the NoteTypesChange event of the NoteOptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void NoteOptions_NoteTypesChange( object sender, EventArgs e )
+        {
+            BindNoteTypes();
+        }
+
+        #endregion
+
+        #region Base Control Methods
+        
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NoteEditor"/> class.
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
-        /// <param name="noteOptions">The note options.</param>
-        public NoteEditor( NoteOptions noteOptions )
+        protected override void CreateChildControls()
         {
-            this.NoteOptions = noteOptions;
+            base.CreateChildControls();
 
             _tbNote = new RockTextBox();
             _hfNoteId = new HiddenFieldWithClass();
@@ -379,42 +404,6 @@ namespace Rock.Web.UI.Controls
             _dtCreateDate = new DateTimePicker();
             _hfParentNoteId = new HiddenFieldWithClass();
             _mdEditWarning = new ModalAlert();
-        }
-
-        #endregion
-
-        #region Base Control Methods
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-
-            if ( Page.IsPostBack )
-            {
-                if ( CanEdit && _ddlNoteType.Visible )
-                {
-                    NoteTypeId = _ddlNoteType.SelectedValueAsInt();
-                }
-            }
-            else
-            {
-                var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( ( this.Page as RockPage )?.CurrentPerson );
-                _ddlNoteType.DataSource = editableNoteTypes;
-                _ddlNoteType.DataBind();
-                _ddlNoteType.Visible = editableNoteTypes.Count() > 1;
-            }
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
 
             _hfNoteId.ID = this.ID + "_hfNoteId";
             _hfNoteId.CssClass = "js-noteid";
@@ -463,7 +452,7 @@ namespace Rock.Web.UI.Controls
 
             _aSecurity.ID = "_aSecurity";
             _aSecurity.Attributes["class"] = "btn btn-security btn-xs btn-square security js-notesecurity";
-            _aSecurity.Attributes["data-entitytype-id"] = CacheEntityType.Get( typeof( Rock.Model.Note ) ).Id.ToString();
+            _aSecurity.Attributes["data-entitytype-id"] = EntityTypeCache.Get( typeof( Rock.Model.Note ) ).Id.ToString();
             _aSecurity.InnerHtml = "<i class='fa fa-lock'></i>";
             Controls.Add( _aSecurity );
 
@@ -473,12 +462,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Binds the note types.
+        /// </summary>
+        private void BindNoteTypes()
+        {
+            EnsureChildControls();
+            var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
+            var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( rockPage?.CurrentPerson );
+            _ddlNoteType.DataSource = editableNoteTypes;
+            _ddlNoteType.DataBind();
+            _ddlNoteType.Visible = editableNoteTypes.Count() > 1;
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            var noteType = NoteTypeId.HasValue ? CacheNoteType.Get( NoteTypeId.Value ) : null;
+            var noteType = NoteTypeId.HasValue ? NoteTypeCache.Get( NoteTypeId.Value ) : null;
             StringBuilder noteCss = new StringBuilder();
             noteCss.Append( "note-editor js-note-editor meta" );
 
@@ -679,7 +681,7 @@ namespace Rock.Web.UI.Controls
                 note.EditedDateTime = RockDateTime.Now;
                 note.NoteUrl = this.RockBlock()?.CurrentPageReference?.BuildUrl();
 
-                var noteType = CacheNoteType.Get( note.NoteTypeId );
+                var noteType = NoteTypeCache.Get( note.NoteTypeId );
 
                 if ( noteType.RequiresApprovals )
                 {

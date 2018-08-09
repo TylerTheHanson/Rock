@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -100,7 +101,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Reads this block to find embedded examples and returns them in a indexed list.
         /// </summary>
-        /// <returns>code examples by postion index</returns>
+        /// <returns>code examples by position index</returns>
         private List<string> ReadExamples()
         {
             var list = new List<string>();
@@ -189,8 +190,8 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                campExample.Campuses = Rock.Cache.CacheCampus.All();
-                campsExample.Campuses = Rock.Cache.CacheCampus.All();
+                campExample.Campuses = CampusCache.All();
+                campsExample.Campuses = CampusCache.All();
                 
                 var rockContext = new RockContext();
                 var allGroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();

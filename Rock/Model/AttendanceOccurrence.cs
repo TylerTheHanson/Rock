@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the start date and time/check in time
+        /// Gets or sets the date of the Attendance
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
@@ -97,6 +97,24 @@ namespace Rock.Model
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
         public DateTime SundayDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        /// <value>
+        /// The notes.
+        /// </value>
+        [DataMember]
+        public string Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number anonymous attendance.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number anonymous attendance.
+        /// </value>
+        [DataMember]
+        public int? AnonymousAttendanceCount { get; set; }
 
         #endregion
 
@@ -139,7 +157,7 @@ namespace Rock.Model
         public virtual ICollection<Attendance> Attendees { get; set; } = new Collection<Attendance>();
 
         /// <summary>
-        /// Gets a value indicating whether attendance was entered (based on presense of any attendee records).
+        /// Gets a value indicating whether attendance was entered (based on presence of any attendee records).
         /// </summary>
         /// <value>
         ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
@@ -285,7 +303,7 @@ namespace Rock.Model
         Schedule = 3,
 
         /// <summary>
-        /// Each Lodation (from Attendance.LocationId) is its own series
+        /// Each Location (from Attendance.LocationId) is its own series
         /// </summary>
         Location = 4
     }
